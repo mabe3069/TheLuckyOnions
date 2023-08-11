@@ -5,14 +5,13 @@ import os
 import csv
 
 pygame.init()
-
-# # Screen dimensions
-# WIDTH, HEIGHT = 800, 600
+from pygame.locals import(
+    K_BACKSPACE,
+    K_ESCAPE,
+)
+# Screen dimensions
+WIDTH, HEIGHT = 800, 600
 FPS = 60
-
-# Constants for the screen dimensions
-WIDTH = 1450
-HEIGHT = 850
 
 # Colors
 WHITE = (255, 255, 255)
@@ -25,7 +24,7 @@ LETTERS = [chr(ord('a') + i) for i in range(26)]
 
 # Load images of letters
 letter_images = {}
-assets_path = r"C:\Users\HongM\fantastic-four-first\Typing_Game\Assets" #change to whatever your filepath is
+assets_path = r"C:\Users\benma\OneDrive\Documents\Onions Backup-20230807T003132Z-001\Onions Backup\Assets" #change to whatever your filepath is
 for letter in LETTERS:
     image_path = os.path.join(assets_path, f"{letter.upper()}_KEY.png")
     try:
@@ -61,18 +60,28 @@ class Shape:
         return self.shape.y + self.shape.height >= HEIGHT - hitbox_bottom
 
 
-def level_1():
+def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Prototype")
     clock = pygame.time.Clock()
 
+    let_list=[]
+    time_list=[]
+    running = True
     # Load background image
-    background_image = pygame.image.load(os.path.join("Assets", "gg.jpg"))
+    background_image = pygame.image.load(os.path.join("Assets", "Blue_BG.png"))
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-
+    with open('lv1.csv', newline='') as csvfile:
+        csvread = csv.reader(csvfile, delimiter=',')
+        line = 0
+        for row in csvread:
+            let_list.append(row[0])
+            time_list.append(row[1])
+            line = line + 1
     shapes = []
-    SPAWN_INTERVAL = 2000  # 2000ms (2 seconds) interval
+    #SPAWN_INTERVAL = 2000  # 2000ms (2 seconds) interval
     last_spawn_time = 0
+    cur_index = 0
 
     letter_index = 0
 
@@ -87,13 +96,15 @@ def level_1():
     pygame.mixer.music.load(background_music_file)
     pygame.mixer.music.play(-1)  # -1 means loop the music
 
-    while True:
+    while running == True:
         pressed_key = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
+                if event.key == K_BACKSPACE:
+                    main()
                 if event.unicode:  # checks if the key corresponds to a character
                     pressed_key = event.unicode.upper()  # normalize to uppercase
 
@@ -105,12 +116,20 @@ def level_1():
 
         current_time = pygame.time.get_ticks()
 
-        # Check if it's time to spawn a new shape
-        if current_time - last_spawn_time >= SPAWN_INTERVAL:
-            letter = random.choice(LETTERS)
-            shapes.append(Shape(letter, current_time))
-            last_spawn_time = current_time
-            letter_index = (letter_index + 1) % len(LETTERS)
+        if cur_index == line:
+            spawn_interval = 5000
+        else:
+            spawn_interval = int(time_list[cur_index])
+        if current_time - last_spawn_time >= spawn_interval:
+            if cur_index == line:
+                running = False
+
+            else:
+                letter = let_list[cur_index]
+                shapes.append(Shape(letter, current_time))
+                cur_index = cur_index + 1
+                last_spawn_time = current_time
+                letter_index = (letter_index + 1) % len(LETTERS)
 
         # Draw background image
         screen.blit(background_image, (0, 0))
@@ -133,7 +152,4 @@ def level_1():
 
         pygame.display.flip()
         clock.tick(FPS)
-
-
-#if __name__ == "__main__":
-    #main()
+main()

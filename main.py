@@ -2,8 +2,7 @@ import pygame
 import random
 import math
 import level_1
-#ben is git-ing by
-#second comment
+
 pygame.init()
 
 WHITE = (255, 255, 255)
