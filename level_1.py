@@ -13,6 +13,10 @@ WHITE = (255, 255, 255)
 TRANSPARENT = (0, 0, 0, 0)
 SQUARE_SIZE = 50
 
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
+
 LETTERS = [chr(ord('a') + i) for i in range(26)]
 letter_images = {}
 assets_path = r"C:\Users\matth\PycharmProjects\TheLuckyOnions\Assets"
@@ -72,11 +76,12 @@ def level_1():
     pygame.mixer.music.play(-1)
     flash_color = None
     flash_end_time = 0
-    FLASH_DURATION = 300  # flash duration in milliseconds
+    FLASH_DURATION = 200  # flash duration in milliseconds
 
     while True:
         correct_key_pressed = False
         pressed_key = None
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -93,17 +98,18 @@ def level_1():
                     correct_key_pressed = True
                     shapes.remove(shape)
                     score += 1
-                    flash_color = (0, 255, 0)
-                    flash_end_time = pygame.time.get_ticks() + FLASH_DURATION
+                    flash_color = GREEN
+                    flash_end_time = current_time + FLASH_DURATION
                 elif shape.is_in_hitbox() and shape.letter != pressed_key:
-                    flash_color = (255, 0, 0)
-                    flash_end_time = pygame.time.get_ticks() + FLASH_DURATION
+                    flash_color = RED
+                    flash_end_time = current_time + FLASH_DURATION
 
         for shape in shapes[:]:
-            if shape.is_in_hitbox() and shape.shape.y > HEIGHT and not correct_key_pressed:
+            if shape.shape.y > HEIGHT:
                 shapes.remove(shape)
-                flash_color = (255, 255, 0)
-                flash_end_time = pygame.time.get_ticks() + FLASH_DURATION
+                if not correct_key_pressed and (current_time - (flash_end_time - FLASH_DURATION)) >= 350:
+                    flash_color = YELLOW
+                    flash_end_time = current_time + FLASH_DURATION
 
         if current_time - last_spawn_time >= SPAWN_INTERVAL:
             letter = random.choice(LETTERS)
@@ -131,3 +137,6 @@ def level_1():
         screen.blit(score_text, (10, 10))
         pygame.display.flip()
         clock.tick(FPS)
+
+if __name__ == "__main__":
+    level_1()
