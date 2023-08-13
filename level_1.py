@@ -6,7 +6,7 @@ import os
 pygame.init()
 
 FPS = 60
-WIDTH = 1450
+WIDTH = 1400
 HEIGHT = 850
 VERTICAL_MARGIN_SIZE = 150
 WHITE = (255, 255, 255)
@@ -19,7 +19,7 @@ YELLOW = (255, 255, 0)
 
 LETTERS = [chr(ord('a') + i) for i in range(26)]
 letter_images = {}
-assets_path = r"C:\Users\HongM\Hong_branch\TheLuckyOnions\Assets"
+assets_path = r"C:\Users\HongM\Hong\TheLuckyOnions\Assets"
 
 for letter in LETTERS:
     image_path = os.path.join(assets_path, f"{letter.upper()}_KEY.png")
