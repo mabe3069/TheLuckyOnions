@@ -2,30 +2,25 @@ import pygame
 import random
 import sys
 import os
-import csv
 
 pygame.init()
 
-# # Screen dimensions
-# WIDTH, HEIGHT = 800, 600
 FPS = 60
-
-# Constants for the screen dimensions
 WIDTH = 1450
 HEIGHT = 850
-
-# Colors
+VERTICAL_MARGIN_SIZE = 150
 WHITE = (255, 255, 255)
 TRANSPARENT = (0, 0, 0, 0)
+SQUARE_SIZE = 50
 
-SQUARE_SIZE = 30
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
 
-# List of letters
 LETTERS = [chr(ord('a') + i) for i in range(26)]
-
-# Load images of letters
 letter_images = {}
-assets_path = r"C:\Users\HongM\fantastic-four-first\Typing_Game\Assets" #change to whatever your filepath is
+assets_path = r"C:\Users\matth\PycharmProjects\TheLuckyOnions\Assets"
+
 for letter in LETTERS:
     image_path = os.path.join(assets_path, f"{letter.upper()}_KEY.png")
     try:
@@ -35,15 +30,14 @@ for letter in LETTERS:
             f"Image file {image_path} not found for letter {letter}. Make sure to have all letter images from A to Z.")
         sys.exit(1)
 
-
 class Shape:
     def __init__(self, letter, spawn_time):
         self.shape = pygame.Rect(0, 0, SQUARE_SIZE, SQUARE_SIZE)
-        self.shape.x = random.randint(0, WIDTH - self.shape.width)
+        self.shape.x = random.randint(VERTICAL_MARGIN_SIZE, WIDTH - VERTICAL_MARGIN_SIZE - self.shape.width)
         self.shape.y = -self.shape.height
         self.letter = letter.upper()
         self.spawn_time = spawn_time
-        self.falling_speed = 5  # Adjust the falling speed here (change this value as needed)
+        self.falling_speed = 7
 
     def move(self):
         self.shape.y += self.falling_speed
@@ -51,89 +45,98 @@ class Shape:
     def draw(self, surface):
         letter_image = letter_images.get(self.letter)
         if letter_image:
-            letter_image = pygame.transform.scale(letter_image, (SQUARE_SIZE, SQUARE_SIZE))
+            if self.letter == 'I':
+                new_size = (SQUARE_SIZE // 2, SQUARE_SIZE)
+            else:
+                new_size = (SQUARE_SIZE, SQUARE_SIZE)
+            letter_image = pygame.transform.scale(letter_image, new_size)
             surface.blit(letter_image, self.shape.topleft)
         else:
             pygame.draw.rect(surface, WHITE, self.shape)
 
     def is_in_hitbox(self):
         hitbox_bottom = HEIGHT // 8
-        return self.shape.y + self.shape.height >= HEIGHT - hitbox_bottom
-
+        return self.shape.y + self.shape.height >= HEIGHT - hitbox_bottom and self.shape.y <= HEIGHT
 
 def level_1():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Prototype")
     clock = pygame.time.Clock()
-
-    # Load background image
-    background_image = pygame.image.load(os.path.join("Assets", "gg.jpg"))
+    background_image = pygame.image.load(os.path.join("Assets", "Purple_BG.png"))
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
     shapes = []
-    SPAWN_INTERVAL = 2000  # 2000ms (2 seconds) interval
+    SPAWN_INTERVAL = 1000
     last_spawn_time = 0
-
-    letter_index = 0
-
     score = 0
     score_font = pygame.font.Font(None, 36)
-
-    # Initialize Pygame mixer for background music
     pygame.mixer.init()
-
-    # Load and play the background music
     background_music_file = os.path.join("Music", "Song_1.mp3")
     pygame.mixer.music.load(background_music_file)
-    pygame.mixer.music.play(-1)  # -1 means loop the music
+    pygame.mixer.music.play(-1)
+    flash_color = None
+    flash_end_time = 0
+    FLASH_DURATION = 200  # flash duration in milliseconds
 
     while True:
+        correct_key_pressed = False
         pressed_key = None
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.unicode:  # checks if the key corresponds to a character
-                    pressed_key = event.unicode.upper()  # normalize to uppercase
-
-        if pressed_key:
-            for shape in shapes[:]:  # make a copy of the list to avoid issues while removing items
-                if shape.letter == pressed_key and shape.is_in_hitbox():
-                    shapes.remove(shape)
-                    score += 1
+                if event.unicode:
+                    pressed_key = event.unicode.upper()
 
         current_time = pygame.time.get_ticks()
 
-        # Check if it's time to spawn a new shape
+        if pressed_key:
+            for shape in shapes[:]:
+                if shape.is_in_hitbox() and shape.letter == pressed_key:
+                    correct_key_pressed = True
+                    shapes.remove(shape)
+                    score += 1
+                    flash_color = GREEN
+                    flash_end_time = current_time + FLASH_DURATION
+                elif shape.is_in_hitbox() and shape.letter != pressed_key:
+                    flash_color = RED
+                    flash_end_time = current_time + FLASH_DURATION
+
+        for shape in shapes[:]:
+            if shape.shape.y > HEIGHT:
+                shapes.remove(shape)
+                if not correct_key_pressed and (current_time - (flash_end_time - FLASH_DURATION)) >= 350:
+                    flash_color = YELLOW
+                    flash_end_time = current_time + FLASH_DURATION
+
         if current_time - last_spawn_time >= SPAWN_INTERVAL:
             letter = random.choice(LETTERS)
             shapes.append(Shape(letter, current_time))
             last_spawn_time = current_time
-            letter_index = (letter_index + 1) % len(LETTERS)
 
-        # Draw background image
         screen.blit(background_image, (0, 0))
-
-        # rectangle on the bottom of the screen
         bottom_rect_height = HEIGHT // 8
-        bottom_rect = pygame.Surface((WIDTH, bottom_rect_height), pygame.SRCALPHA)
-        pygame.draw.rect(bottom_rect, TRANSPARENT, (0, 0, WIDTH, bottom_rect_height))
-        pygame.draw.rect(bottom_rect, WHITE, (2, 2, WIDTH - 4, bottom_rect_height - 4), 2)
-        screen.blit(bottom_rect, (0, HEIGHT - bottom_rect_height))
+        bottom_rect_width = WIDTH - 2 * VERTICAL_MARGIN_SIZE
+        bottom_rect = pygame.Surface((bottom_rect_width, bottom_rect_height), pygame.SRCALPHA)
 
-        # Move and draw the shapes
+        if flash_color and current_time <= flash_end_time:
+            pygame.draw.rect(bottom_rect, flash_color, (0, 0, bottom_rect_width, bottom_rect_height))
+        else:
+            pygame.draw.rect(bottom_rect, TRANSPARENT, (0, 0, bottom_rect_width, bottom_rect_height))
+
+        pygame.draw.rect(bottom_rect, WHITE, (2, 2, bottom_rect_width - 4, bottom_rect_height - 4), 2)
+        screen.blit(bottom_rect, (VERTICAL_MARGIN_SIZE, HEIGHT - bottom_rect_height))
+
         for shape_obj in shapes:
             shape_obj.move()
             shape_obj.draw(screen)
 
-        # Draw score
         score_text = score_font.render(f"Score: {score}", True, WHITE)
         screen.blit(score_text, (10, 10))
-
         pygame.display.flip()
         clock.tick(FPS)
 
-
-#if __name__ == "__main__":
-    #main()
+if __name__ == "__main__":
+    level_1()

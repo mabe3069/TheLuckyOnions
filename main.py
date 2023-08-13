@@ -3,7 +3,6 @@ import random
 import math
 import level_1
 
-
 pygame.init()
 
 WHITE = (255, 255, 255)
@@ -14,77 +13,75 @@ YELLOW = (201, 196, 26)
 # Constants for the screen dimensions
 SCREEN_WIDTH = 1450
 SCREEN_HEIGHT = 850
-BUTTON_RADIUS = 50
-
-
-
 
 # Constants for the button dimensions
-BUTTON_WIDTH = 10
-BUTTON_HEIGHT = 10
+BUTTON_WIDTH = 280
+BUTTON_HEIGHT = 50
 
-
-
-class CircleButton:
-    def __init__(self, x, y, radius, color, text, text_color, font_size):
+class RectButton:
+    def __init__(self, x, y, width, height, color, text, text_color, font_size):
         self.x = x
         self.y = y
-        self.radius = radius
+        self.width = width
+        self.height = height
         self.color = color
         self.text = text
         self.text_color = text_color
         self.font = pygame.font.Font(None, font_size)
 
-
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
         text_surface = self.font.render(self.text, True, self.text_color)
-        text_rect = text_surface.get_rect(center=(self.x, self.y))
+        text_rect = text_surface.get_rect(center=(self.x + self.width // 2, self.y + self.height // 2))
         screen.blit(text_surface, text_rect)
 
     def is_clicked(self, pos):
-        distance = math.sqrt((self.x - pos[0]) ** 2 + (self.y - pos[1]) ** 2)
-        return distance <= self.radius
+        return self.x <= pos[0] <= self.x + self.width and self.y <= pos[1] <= self.y + self.height
 
 # Create the Pygame window
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Circle Button Example")
+pygame.display.set_caption("Rect Button Example")
 
-# Create the button
-button2 = CircleButton(
-    x=SCREEN_WIDTH // 2,
-    y=SCREEN_HEIGHT // 2,
-    radius=BUTTON_RADIUS,
+# Create the buttons
+button2 = RectButton(
+    x=SCREEN_WIDTH // 2 - BUTTON_WIDTH // 2,
+    y=SCREEN_HEIGHT // 2 - BUTTON_HEIGHT // 2,
+    width=BUTTON_WIDTH,
+    height=BUTTON_HEIGHT,
     color=PURPLE,
-    text="Level-1",
-    text_color=WHITE,
+    text="Random Letter Mode",
+    text_color=YELLOW,
     font_size=35
 )
 
-button1 = CircleButton(
-    x=SCREEN_WIDTH // 2,
+button1 = RectButton(
+    x=SCREEN_WIDTH // 2 - BUTTON_WIDTH // 2,
     y=(SCREEN_HEIGHT - SCREEN_HEIGHT//2)+110,
-    radius=BUTTON_RADIUS,
+    width=BUTTON_WIDTH,
+    height=BUTTON_HEIGHT,
     color=PURPLE,
-    text="Level-2",
-    text_color=WHITE,
+    text="Word Mode",
+    text_color=YELLOW,
     font_size=30
 )
 
-button3 = CircleButton(
-    x=SCREEN_WIDTH // 2,
+button3 = RectButton(
+    x=SCREEN_WIDTH // 2 - BUTTON_WIDTH // 2,
     y=(SCREEN_HEIGHT - SCREEN_HEIGHT//2)+220,
-    radius=BUTTON_RADIUS,
+    width=BUTTON_WIDTH,
+    height=BUTTON_HEIGHT,
     color=PURPLE,
     text="Exit",
-    text_color=WHITE,
+    text_color=YELLOW,
     font_size=30
 )
+
 
 
 
 # Image imports
-BG = pygame.image.load("D.png")
+BG = pygame.image.load("BG_menu.png")
+BG = pygame.transform.scale(BG, (SCREEN_WIDTH, SCREEN_HEIGHT))
 target = pygame.image.load("shot.png")
 #shotty = pygame.image.load("Shotgun.png")
 shot = pygame.image.load("Shot.png")
@@ -192,7 +189,7 @@ def intro():
     CX = 50
     show1 = font.render(("Welcome to prototype,"), True, TITLE )  # pygame surface string
     show2 = font.render(("Are you ready to learn how to type?"), True, TITLE)  # pygame surface string
-    show3 = font.render(("Let have fun and learn more!!!"), True, TITLE)  # pygame surface string
+    show3 = font.render(("Let's have fun and learn more!!!"), True, TITLE)  # pygame surface string
 
     screen.blit(show1, (70, 70))
     screen.blit(show2, (70, 120))
