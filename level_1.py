@@ -19,7 +19,7 @@ YELLOW = (255, 255, 0)
 
 LETTERS = [chr(ord('a') + i) for i in range(26)]
 letter_images = {}
-assets_path = r"C:\Users\matth\PycharmProjects\TheLuckyOnions\Assets"
+assets_path = r"C:\Users\HongM\Hong_branch\TheLuckyOnions\Assets"
 
 for letter in LETTERS:
     image_path = os.path.join(assets_path, f"{letter.upper()}_KEY.png")
@@ -62,7 +62,7 @@ def level_1():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Prototype")
     clock = pygame.time.Clock()
-    background_image = pygame.image.load(os.path.join("Assets", "Purple_BG.png"))
+    background_image = pygame.image.load(os.path.join("Assets", "BG.png"))
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 
     shapes = []
