@@ -69,7 +69,7 @@ class Shape:
         return self.shape.y + self.shape.height >= HEIGHT - hitbox_bottom
 
 
-
+#hello
 def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Prototype")
