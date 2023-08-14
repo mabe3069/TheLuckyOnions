@@ -11,7 +11,7 @@ BLACK = (0, 0, 0)
 YELLOW = (245, 220, 29)
 
 # Constants for the screen dimensions
-SCREEN_WIDTH = 1400
+SCREEN_WIDTH = 1420
 SCREEN_HEIGHT = 800
 BUTTON_RADIUS = 50
 
