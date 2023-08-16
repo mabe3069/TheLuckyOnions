@@ -75,12 +75,13 @@ class Shape:
         hitbox_bottom = HEIGHT // 8
         return self.shape.y + self.shape.height >= HEIGHT - hitbox_bottom and self.shape.y <= HEIGHT
 
-def level_1():
+def level_1(levelcsv, song):
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Prototype")
     clock = pygame.time.Clock()
-    background_image = pygame.image.load(os.path.join("Assets", "Purple_BG.png"))
+    background_image = pygame.image.load(os.path.join("Assets", "BG.png"))
     background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+
     Running = True
     shapes = []
 
@@ -88,7 +89,7 @@ def level_1():
     score = 0
     score_font = pygame.font.Font(None, 36)
     pygame.mixer.init()
-    background_music_file = os.path.join("Music", "Song_1.mp3")
+    background_music_file = os.path.join("Music", song)
     pygame.mixer.music.load(background_music_file)
     pygame.mixer.music.play(-1)
     flash_color = None
@@ -100,16 +101,19 @@ def level_1():
     time_list = []
     cur_index = 0
     letter_index = 0
-    with open('lv1.csv', newline='') as csvfile:
+
+    with open(levelcsv, newline='') as csvfile:
         csvread = csv.reader(csvfile, delimiter=',')
         line = 0
         for row in csvread:
             let_list.append(row[0])
             time_list.append(row[1])
             line = line + 1
-    while Running:
+
+    while (Running == True):
         correct_key_pressed = False
         pressed_key = None
+
 
         if pause.pause_state() == False:
             for event in pygame.event.get():
@@ -117,12 +121,13 @@ def level_1():
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.type == K_DELETE:
+                    if event.key == K_DELETE:
+                        pygame.mixer.music.pause()
                         Running = False
                     if event.unicode:
                         pressed_key = event.unicode.upper()
                     if event.key == K_BACKSPACE:
-                        level_1()
+                        level_1(levelcsv, song)
                     if event.key == K_ESCAPE:
                         last_time = pygame.time.get_ticks()
                         pygame.mixer.music.pause()
@@ -157,7 +162,7 @@ def level_1():
             if current_time - last_spawn_time >= spawn_interval + timedelay:
                 timedelay = 0
                 if cur_index == line:
-                    running = False
+                    Running = False
 
                 else:
                     letter = let_list[cur_index]
@@ -193,11 +198,12 @@ def level_1():
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.type == K_DELETE:
+                    if event.key == K_DELETE:
+                        pygame.mixer.music.pause()
                         Running = False
                     if event.key == K_BACKSPACE:
                         pause.unpause_game()
-                        level_1()
+                        level_1(levelcsv, song)
                     if event.key == K_ESCAPE:
                         timedelay = pygame.time.get_ticks() - last_time + timedelay
                         last_time = 0
@@ -206,4 +212,4 @@ def level_1():
 
 
 if __name__ == "__main__":
-    level_1()
+    print("main")
