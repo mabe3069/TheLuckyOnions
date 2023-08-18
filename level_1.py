@@ -12,7 +12,7 @@ from pygame.locals import(
 )
 #this initializes the backspace (restarting) escape (pausing) and f1 for force quiting respectivly
 FPS = 60
-WIDTH = 1450
+WIDTH = 1400
 HEIGHT = 850
 VERTICAL_MARGIN_SIZE = 150
 WHITE = (255, 255, 255)
@@ -25,7 +25,9 @@ YELLOW = (255, 255, 0)
 
 LETTERS = [chr(ord('a') + i) for i in range(26)]
 letter_images = {}
+
 assets_path = r"Assets"
+
 for letter in LETTERS:
     image_path = os.path.join(assets_path, f"{letter.upper()}_KEY.png")
     try:
