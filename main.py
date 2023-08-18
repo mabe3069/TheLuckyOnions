@@ -323,7 +323,11 @@ while tracker:
             if button2.is_clicked(mouse_pos):
                 print("2")
                 #starttrack += 1
-                level_1.level_1()
+                level_1.level_1("lv1.csv", "Song_1.mp3")
+                level_1.level_1("lv2.csv", "Song_2.mp3")
+                level_1.level_1("lv3.csv", "Song_3.mp3")
+                level_1.level_1("lv4.csv", "Song_4.mp3")
+                level_1.level_1("lv5.csv", "Song_5.mp3")
 
 
             if button3.is_clicked(mouse_pos):
