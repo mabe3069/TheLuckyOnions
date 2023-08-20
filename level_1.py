@@ -12,7 +12,7 @@ from pygame.locals import(
 )
 #this initializes the backspace (restarting) escape (pausing) and f1 for force quiting respectivly
 FPS = 60
-WIDTH = 1450
+WIDTH = 1400
 HEIGHT = 850
 VERTICAL_MARGIN_SIZE = 150
 WHITE = (255, 255, 255)
@@ -25,7 +25,9 @@ YELLOW = (255, 255, 0)
 
 LETTERS = [chr(ord('a') + i) for i in range(26)]
 letter_images = {}
+
 assets_path = r"Assets"
+
 for letter in LETTERS:
     image_path = os.path.join(assets_path, f"{letter.upper()}_KEY.png")
     try:
@@ -75,7 +77,7 @@ class Shape:
         hitbox_bottom = HEIGHT // 8
         return self.shape.y + self.shape.height >= HEIGHT - hitbox_bottom and self.shape.y <= HEIGHT
 
-def level_1(levelcsv, song):
+def level_1(levelcsv, song, Score) -> int:
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Prototype")
     clock = pygame.time.Clock()
@@ -84,9 +86,9 @@ def level_1(levelcsv, song):
 
     Running = True
     shapes = []
-
+    health = 100
     last_spawn_time = 0
-    score = 0
+    score = Score
     score_font = pygame.font.Font(None, 36)
     pygame.mixer.init()
     background_music_file = os.path.join("Music", song)
@@ -111,6 +113,9 @@ def level_1(levelcsv, song):
             line = line + 1
 
     while (Running == True):
+
+        if health <= 0:
+            return False
         correct_key_pressed = False
         pressed_key = None
 
@@ -127,7 +132,7 @@ def level_1(levelcsv, song):
                     if event.unicode:
                         pressed_key = event.unicode.upper()
                     if event.key == K_BACKSPACE:
-                        level_1(levelcsv, song)
+                        level_1(levelcsv, song, Score)
                     if event.key == K_ESCAPE:
                         last_time = pygame.time.get_ticks()
                         pygame.mixer.music.pause()
@@ -140,11 +145,12 @@ def level_1(levelcsv, song):
                     if shape.is_in_hitbox() and shape.letter == pressed_key:
                         correct_key_pressed = True
                         shapes.remove(shape)
-                        score += 1
+                        score += 10
                         flash_color = GREEN
                         flash_end_time = current_time + FLASH_DURATION
                     elif shape.is_in_hitbox() and shape.letter != pressed_key:
                         flash_color = RED
+                        health = health - 10
                         flash_end_time = current_time + FLASH_DURATION
 
             for shape in shapes[:]:
@@ -152,6 +158,7 @@ def level_1(levelcsv, song):
                     shapes.remove(shape)
                     if not correct_key_pressed and (current_time - (flash_end_time - FLASH_DURATION)) >= 350:
                         flash_color = YELLOW
+                        health = health - 5
                         flash_end_time = current_time + FLASH_DURATION
 
 
@@ -162,7 +169,7 @@ def level_1(levelcsv, song):
             if current_time - last_spawn_time >= spawn_interval + timedelay:
                 timedelay = 0
                 if cur_index == line:
-                    Running = False
+                    return score
 
                 else:
                     letter = let_list[cur_index]
@@ -190,6 +197,8 @@ def level_1(levelcsv, song):
 
             score_text = score_font.render(f"Score: {score}", True, WHITE)
             screen.blit(score_text, (10, 10))
+            health_text = score_font.render(f"Health: {health}", True, WHITE)
+            screen.blit(health_text, (10, 50))
             pygame.display.flip()
             clock.tick(FPS)
         else:
@@ -203,13 +212,13 @@ def level_1(levelcsv, song):
                         Running = False
                     if event.key == K_BACKSPACE:
                         pause.unpause_game()
-                        level_1(levelcsv, song)
+                        level_1(levelcsv, song, Score)
                     if event.key == K_ESCAPE:
                         timedelay = pygame.time.get_ticks() - last_time + timedelay
                         last_time = 0
                         pygame.mixer.music.unpause()
                         pause.unpause_game()
-
+    return -1
 
 if __name__ == "__main__":
     print("main")
