@@ -1,4 +1,5 @@
-import pygame, sys
+import pygame
+import sys
 import random
 import level_1
 import os
@@ -10,12 +11,13 @@ pygame.init()
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 YELLOW = (245, 220, 29)
-
+GREEN = (0, 255, 0)
+GREY = (111,111,111)
 # Constants for the screen dimensions
-SCREEN_WIDTH = 1420
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1242
+SCREEN_HEIGHT = 700
 
-
+Highscore = 0
 # Text font
 font = pygame.font.Font("freesansbold.ttf", 50)
 fontScore = pygame.font.Font("freesansbold.ttf", 35)
@@ -93,7 +95,7 @@ button2 = Button(
     pos= (250,250),
     elevation= 5,
     # color=BLACK,
-    text="Random Letter",
+    text="Letter Mode",
 
 )
 
@@ -201,7 +203,7 @@ words = [
 ]
 
 # Scoreboard
-score = -1
+score = 0
 scoreboard = "Words typed: " + str(score)
 
 # All of the functions used in the program
@@ -216,9 +218,10 @@ def printer(x, y):
 def updatescore(scoreboard):
     """ Updates the score"""
     show = fontScore.render((scoreboard), True, (WHITE))  # pygame surface string
-    screen.blit(show, (1100, 40))
-
-
+    screen.blit(show, (10, 40))
+def updatelives(liveboard):
+    show = fontScore.render((liveboard), True, (GREEN))  # pygame surface string
+    screen.blit(show, (50, 100))
 def intro():
     """ Lays out everything for the starting screen"""
 
@@ -239,9 +242,7 @@ def randomCoordinates():
     textX = random.randrange(550)
     textY = random.randrange(125, 350)
     return textX, textY
-
-
-def correctLetter(song):
+def correctLetter():
     """Eliminates the first letter of the word when the user is correct"""
     global textX
     global lengthTracker
@@ -251,28 +252,63 @@ def correctLetter(song):
     temp = ""  # stores the joined string
     currentWord = temp.join(indexedWord)
     lengthTracker += 1  # used to keep track of which letter the user is on
+def newGame(song):
+    """Eliminates the first letter of the word when the user is correct"""
+    global textX
+    global lengthTracker
+    global indexedWord
+    global currentLength
+    global currentWords
+    global score
+    score = -1
+    temp = ""  # stores the joined string
+    currentWord = temp.join(indexedWord)
+    lengthTracker = 1  # used to keep track of which letter the user is on
     pygame.mixer.init()
     background_music_file = os.path.join("Music", song)
     pygame.mixer.music.load(background_music_file)
     pygame.mixer.music.play(-1)
 
 
+def endGame():
+    global OGword
+    global currentWord
+    global OGindex
+    global indexedWord
+    global lengthTracker
+    print(OGword)
+    print(currentWord)
+    print(indexedWord)
+    currentWord = ""
+    indexedWord = ""
+    lengthTracker = 0 # resets the letter tracker
 def wrongLetter():
     """When a letter is wrong, we want to restart and print out the original word."""
+    global lives
     global OGword
     global currentWord
     global OGindex
     global indexedWord
     global lengthTracker
     # reseting the word length
+    lives = lives - 1
     currentWord = OGword
     indexedWord = OGindex.copy()
     lengthTracker = 0  # resets the letter tracker
 
-
+lives = 0
 # Loops through the game
 tracker = True
+tracker2 = False
 while tracker:
+    if tracker2 == False:
+        currentWord = " "
+        OGword = " "
+        indexedWord = list(currentWord)
+        currentLength = len(indexedWord)
+        lengthTracker = 0
+        starttrack = 0
+        lives = 5
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             tracker = False  # This causes the While loop to evaluate False and exit the game
@@ -283,14 +319,15 @@ while tracker:
             # Check if the left mouse button was clicked
             mouse_pos = pygame.mouse.get_pos()
 
-            if button3.is_clicked():
+            if button3.is_clicked() and tracker2 == False:
                 print("3")
                 tracker = False
                 
-            if button1.is_clicked():
+            if button1.is_clicked() and tracker2 == False:
                 print("1")
                 starttrack += 1
-                correctLetter("Song_2.mp3")
+                tracker2 = True
+                newGame("Song_2.mp3")
                 
 
 
@@ -303,7 +340,7 @@ while tracker:
             #    level_1.level_1("lv4.csv", "Song_4.mp3")
             #    level_1.level_1("lv5.csv", "Song_5.mp3")
 
-            if button2.is_clicked():
+            if button2.is_clicked() and tracker2 == False:
                 print("2")
                 # starttrack += 1
                 tscore = 0
@@ -320,200 +357,213 @@ while tracker:
                     tscore = rscore + tscore
                 if rscore >= 0:
                     rscore = level_1.level_1("lv5.csv", "Song_5.mp3", tscore)
-                tracker = False
+                if tscore > Highscore:
+                    Highscore = tscore
+
 
 
 
 
         # This is tracking if a key is pressed
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_a:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "a":
-                    correctLetter()
-                else:
-                    wrongLetter()
+        if tracker2:
+            if lives <= 0:
+                pygame.mixer.music.pause()
+                starttrack = 0
+                tracker2 = False
+                endGame()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DELETE:
+                    pygame.mixer.music.pause()
+                    starttrack = 0
+                    tracker2 = False
+                    endGame()
+                if event.key == pygame.K_a:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "a":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            # Each elif statement is for a certain letter on the keyboard
-            elif event.key == pygame.K_b:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "b":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                # Each elif statement is for a certain letter on the keyboard
+                elif event.key == pygame.K_b:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "b":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_c:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "c":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_c:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "c":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_d:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "d":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_d:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "d":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_e:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "e":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_e:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "e":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_f:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "f":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_f:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "f":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_g:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "g":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_g:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "g":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_h:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "h":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_h:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "h":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_i:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "i":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_i:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "i":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_j:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "j":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_j:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "j":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_k:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "k":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_k:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "k":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_l:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "l":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_l:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "l":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_m:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "m":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_m:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "m":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_n:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "n":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_n:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "n":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_o:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "o":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_o:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "o":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_p:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "p":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_p:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "p":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_q:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "q":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_q:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "q":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_r:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "r":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_r:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "r":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_s:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "s":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_s:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "s":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_t:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "t":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_t:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "t":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_u:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "u":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_u:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "u":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_v:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "v":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_v:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "v":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_w:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "w":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_w:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "w":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_x:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "x":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_x:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "x":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_y:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "y":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_y:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "y":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_z:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == "z":
-                    correctLetter()
-                else:
-                    wrongLetter()
+                elif event.key == pygame.K_z:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == "z":
+                        correctLetter()
+                    else:
+                        wrongLetter()
 
-            elif event.key == pygame.K_SPACE:
-                # if this key is pressed, we need to check if the  letter is the zero index
-                if indexedWord[0] == " ":
-                    correctLetter()
+                elif event.key == pygame.K_SPACE:
+                    # if this key is pressed, we need to check if the  letter is the zero index
+                    if indexedWord[0] == " ":
+                        correctLetter()
 
     # basic updates
     screen.fill((27, 150, 44))
@@ -522,6 +572,16 @@ while tracker:
         screen.blit(BG, (0, 0)) #backgroun first.
         screen.blit(logo, (150, 100))
 
+
+
+        show = fontScore.render(("guide"), True, (GREY))  # pygame surface string
+        screen.blit(show, (750, 500))
+        show = fontScore.render(("delete: exit mode"), True, (GREY))  # pygame surface string
+        screen.blit(show, (750, 550))
+        show = fontScore.render(("esc: pause (let mode)"), True, (GREY))  # pygame surface string
+        screen.blit(show, (750, 600))
+        show = fontScore.render(("backspace: restart (let mode)"), True, (GREY))  # pygame surface string
+        screen.blit(show, (750, 650))
 
     else:
         screen.blit(L2, (0, 0))
@@ -537,11 +597,12 @@ while tracker:
         intro()
     else:
         updatescore(scoreboard)
+
     if lengthTracker == currentLength:
         # this activates if the user types a whole word correctly
         IMAGE_TIME = 30
         if IMAGE_TIME > 0 and (starttrack != 0):
-            screen.blit(shot, (textX - 10, textY - 100))
+            screen.blit(shot, (textX - 10,  textY - 50))
             IMAGE_TIME -= 1
             score += 1
 
@@ -559,7 +620,7 @@ while tracker:
 
     if starttrack != 0:
         # this spawns shotgun and a new target
-        screen.blit(target, (textX - 10, textY - 100))
+        screen.blit(target, (textX - 10, textY + 50))
 
 
     clock.tick(60)

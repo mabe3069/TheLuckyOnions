@@ -12,8 +12,8 @@ from pygame.locals import(
 )
 #this initializes the backspace (restarting) escape (pausing) and f1 for force quiting respectivly
 FPS = 60
-WIDTH = 1400
-HEIGHT = 850
+WIDTH = 1242
+HEIGHT = 700
 VERTICAL_MARGIN_SIZE = 150
 WHITE = (255, 255, 255)
 TRANSPARENT = (0, 0, 0, 0)
@@ -115,7 +115,8 @@ def level_1(levelcsv, song, Score) -> int:
     while (Running == True):
 
         if health <= 0:
-            return False
+            pygame.mixer.music.pause()
+            Running = False
         correct_key_pressed = False
         pressed_key = None
 
@@ -197,8 +198,11 @@ def level_1(levelcsv, song, Score) -> int:
 
             score_text = score_font.render(f"Score: {score}", True, WHITE)
             screen.blit(score_text, (10, 10))
-            health_text = score_font.render(f"Health: {health}", True, WHITE)
+            health_text = score_font.render(f"Health: {health}", True, (0, 200, 0))
             screen.blit(health_text, (10, 50))
+            levelnum = levelcsv[2:3]
+            level_text = score_font.render(f"Level: {levelnum}", True, WHITE)
+            screen.blit(level_text,(600, 10))
             pygame.display.flip()
             clock.tick(FPS)
         else:
