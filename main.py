@@ -1,10 +1,7 @@
 import pygame
-import sys
 import random
 import level_1
 import os
-
-
 
 pygame.init()
 
@@ -12,7 +9,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 YELLOW = (245, 220, 29)
 GREEN = (0, 255, 0)
-GREY = (111,111,111)
+GREY = (111, 111, 111)
 # Constants for the screen dimensions
 SCREEN_WIDTH = 1242
 SCREEN_HEIGHT = 700
@@ -22,24 +19,25 @@ Highscore = 0
 font = pygame.font.Font("freesansbold.ttf", 50)
 fontScore = pygame.font.Font("freesansbold.ttf", 35)
 
+
 class Button:
-    def __init__(self,text,width,height,pos,elevation):
-        #Core attributes
+    def __init__(self, text, width, height, pos, elevation):
+        # Core attributes
         self.pressed = False
         self.elevation = elevation
         self.dynamic_elevation = elevation
         self.original_y_pos = pos[1]
 
         # top rectangle
-        self.top_rect = pygame.Rect(pos,(width,height))
+        self.top_rect = pygame.Rect(pos, (width, height))
         self.top_color = '#475F77'
 
         # bottom rectangle
-        self.bottom_rect = pygame.Rect(pos,(width,height))
+        self.bottom_rect = pygame.Rect(pos, (width, height))
         self.bottom_color = '#eceff1'
-        #text
-        self.text_surf = font.render(text,True,'#FFFFFF')
-        self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
+        # text
+        self.text_surf = font.render(text, True, '#FFFFFF')
+        self.text_rect = self.text_surf.get_rect(center=self.top_rect.center)
 
     def draw(self):
         # elevation logic
@@ -49,8 +47,8 @@ class Button:
         self.bottom_rect.midtop = self.top_rect.midtop
         self.bottom_rect.height = self.top_rect.height + self.dynamic_elevation
 
-        pygame.draw.rect(screen,self.bottom_color, self.bottom_rect,border_radius = 60)
-        pygame.draw.rect(screen,self.top_color, self.top_rect,border_radius = 60)
+        pygame.draw.rect(screen, self.bottom_color, self.bottom_rect, border_radius=60)
+        pygame.draw.rect(screen, self.top_color, self.top_rect, border_radius=60)
         screen.blit(self.text_surf, self.text_rect)
         self.is_clicked()
 
@@ -73,27 +71,20 @@ class Button:
             self.top_color = '#475F77'
 
 
-
-
-
-
 # Constants for the button dimensions
 BUTTON_WIDTH = 420
 BUTTON_HEIGHT = 60
 
-
-
 # Create the Pygame window
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-# pygame.display.set_caption("Circle Button Example")
 
 
 # Create the buttons
 button2 = Button(
     width=BUTTON_WIDTH,
     height=BUTTON_HEIGHT,
-    pos= (250,250),
-    elevation= 5,
+    pos=(150, 250),
+    elevation=5,
     # color=BLACK,
     text="Letter Mode",
 
@@ -102,29 +93,26 @@ button2 = Button(
 button1 = Button(
     width=BUTTON_WIDTH,
     height=BUTTON_HEIGHT,
-    pos= (250,350),
-    elevation= 6,
+    pos=(150, 350),
+    elevation=6,
     text="Word Mode",
 )
-
 
 button3 = Button(
     width=BUTTON_WIDTH,
     height=BUTTON_HEIGHT,
-    pos= (250,450),
-    elevation= 5,
+    pos=(150, 450),
+    elevation=5,
     text="Exit",
 )
-
 
 # Image imports
 BG = pygame.image.load("p4.jpg")
 L2 = pygame.image.load("p6.png")
 target = pygame.image.load("shot.png")
 logo = pygame.image.load("p5.png")
-#shotty = pygame.image.load("Shotgun.png")
 shot = pygame.image.load("Shot.png")
-#cowboy = pygame.image.load("Graphics\Cowboy.png")
+
 
 # Title and icon
 pygame.display.set_caption("Lucky onions!")
@@ -133,8 +121,6 @@ pygame.display.set_icon(icon)
 
 # Clock
 clock = pygame.time.Clock()
-
-
 
 # Target coordinates, these two values should change when the new word appears
 textX = 170
@@ -206,9 +192,8 @@ words = [
 score = 0
 scoreboard = "Words typed: " + str(score)
 
+
 # All of the functions used in the program
-
-
 def printer(x, y):
     """ Presents the text onto the screen."""
     show = font.render(currentWord, True, WHITE)
@@ -219,16 +204,19 @@ def updatescore(scoreboard):
     """ Updates the score"""
     show = fontScore.render((scoreboard), True, (WHITE))  # pygame surface string
     screen.blit(show, (10, 40))
+
+
 def updatelives(liveboard):
     show = fontScore.render((liveboard), True, (GREEN))  # pygame surface string
     screen.blit(show, (50, 100))
+
+
 def intro():
     """ Lays out everything for the starting screen"""
 
     button1.draw()
     button2.draw()
     button3.draw()
-
 
 
 def randomString():
@@ -242,6 +230,8 @@ def randomCoordinates():
     textX = random.randrange(550)
     textY = random.randrange(125, 350)
     return textX, textY
+
+
 def correctLetter():
     """Eliminates the first letter of the word when the user is correct"""
     global textX
@@ -252,6 +242,8 @@ def correctLetter():
     temp = ""  # stores the joined string
     currentWord = temp.join(indexedWord)
     lengthTracker += 1  # used to keep track of which letter the user is on
+
+
 def newGame(song):
     """Eliminates the first letter of the word when the user is correct"""
     global textX
@@ -281,7 +273,9 @@ def endGame():
     print(indexedWord)
     currentWord = ""
     indexedWord = ""
-    lengthTracker = 0 # resets the letter tracker
+    lengthTracker = 0  # resets the letter tracker
+
+
 def wrongLetter():
     """When a letter is wrong, we want to restart and print out the original word."""
     global lives
@@ -295,6 +289,7 @@ def wrongLetter():
     currentWord = OGword
     indexedWord = OGindex.copy()
     lengthTracker = 0  # resets the letter tracker
+
 
 lives = 0
 # Loops through the game
@@ -313,8 +308,6 @@ while tracker:
         if event.type == pygame.QUIT:
             tracker = False  # This causes the While loop to evaluate False and exit the game
 
-
-
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the left mouse button was clicked
             mouse_pos = pygame.mouse.get_pos()
@@ -322,23 +315,13 @@ while tracker:
             if button3.is_clicked() and tracker2 == False:
                 print("3")
                 tracker = False
-                
+
             if button1.is_clicked() and tracker2 == False:
                 print("1")
                 starttrack += 1
                 tracker2 = True
                 newGame("Song_2.mp3")
-                
 
-
-            # if button2.is_clicked():
-            #    print("2")
-            #    # starttrack += 1
-            #    level_1.level_1("lv1.csv", "Song_1.mp3")
-            #    level_1.level_1("lv2.csv", "Song_2.mp3")
-            #    level_1.level_1("lv3.csv", "Song_3.mp3")
-            #    level_1.level_1("lv4.csv", "Song_4.mp3")
-            #    level_1.level_1("lv5.csv", "Song_5.mp3")
 
             if button2.is_clicked() and tracker2 == False:
                 print("2")
@@ -359,10 +342,6 @@ while tracker:
                     rscore = level_1.level_1("lv5.csv", "Song_5.mp3", tscore)
                 if tscore > Highscore:
                     Highscore = tscore
-
-
-
-
 
         # This is tracking if a key is pressed
         if tracker2:
@@ -569,28 +548,22 @@ while tracker:
     screen.fill((27, 150, 44))
 
     if starttrack == 0:
-        screen.blit(BG, (0, 0)) #backgroun first.
-        screen.blit(logo, (150, 100))
+        screen.blit(BG, (0, 0))  # backgroun first.
+        screen.blit(logo, (150, 80))
 
-
-
-        show = fontScore.render(("guide"), True, (GREY))  # pygame surface string
-        screen.blit(show, (750, 500))
-        show = fontScore.render(("delete: exit mode"), True, (GREY))  # pygame surface string
-        screen.blit(show, (750, 550))
-        show = fontScore.render(("esc: pause (let mode)"), True, (GREY))  # pygame surface string
-        screen.blit(show, (750, 600))
-        show = fontScore.render(("backspace: restart (let mode)"), True, (GREY))  # pygame surface string
-        screen.blit(show, (750, 650))
+        show = fontScore.render(("Guide"), True, (WHITE))  # pygame surface string
+        screen.blit(show, (650, 250))
+        show = fontScore.render(("Delete: exit mode"), True, (WHITE))  # pygame surface string
+        screen.blit(show, (650, 300))
+        show = fontScore.render(("Esc: pause (letter mode)"), True, (WHITE))  # pygame surface string
+        screen.blit(show, (650, 350))
+        show = fontScore.render(("Backspace: restart (letter mode)"), True, (WHITE))  # pygame surface string
+        screen.blit(show, (650, 400))
 
     else:
         screen.blit(L2, (0, 0))
 
-
-
-
     printer(textX, textY)
-
 
     if starttrack == 0:
         # This loop only occurs at the start of the game
@@ -602,7 +575,7 @@ while tracker:
         # this activates if the user types a whole word correctly
         IMAGE_TIME = 30
         if IMAGE_TIME > 0 and (starttrack != 0):
-            screen.blit(shot, (textX - 10,  textY - 50))
+            screen.blit(shot, (textX - 10, textY - 50))
             IMAGE_TIME -= 1
             score += 1
 
@@ -622,13 +595,11 @@ while tracker:
         # this spawns shotgun and a new target
         screen.blit(target, (textX - 10, textY + 50))
 
-
     clock.tick(60)
     pygame.display.update()
 
 
-
 # Things to do in future possibly:
 # Two member can type at a same time.
-# add a starting menu with advanced options
+# More level for Word mode
 # calculate words per minute
