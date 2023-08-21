@@ -1,7 +1,8 @@
-import pygame
+import pygame, sys
 import random
-import math
 import level_1
+import os
+
 
 
 pygame.init()
@@ -13,133 +14,110 @@ YELLOW = (245, 220, 29)
 # Constants for the screen dimensions
 SCREEN_WIDTH = 1420
 SCREEN_HEIGHT = 800
-BUTTON_RADIUS = 50
 
-class RectButton:
-    def __init__(self, x, y, width, height, color, text, text_color, font_size):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.color = color
-        self.text = text
-        self.text_color = text_color
-        self.font = pygame.font.Font(None, font_size)
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
-        text_surface = self.font.render(self.text, True, self.text_color)
-        text_rect = text_surface.get_rect(center=(self.x + self.width // 2, self.y + self.height // 2))
-        screen.blit(text_surface, text_rect)
+# Text font
+font = pygame.font.Font("freesansbold.ttf", 50)
+fontScore = pygame.font.Font("freesansbold.ttf", 35)
 
-    def is_clicked(self, pos):
-        return self.x <= pos[0] <= self.x + self.width and self.y <= pos[1] <= self.y + self.height
+class Button:
+    def __init__(self,text,width,height,pos,elevation):
+        #Core attributes
+        self.pressed = False
+        self.elevation = elevation
+        self.dynamic_elevation = elevation
+        self.original_y_pos = pos[1]
+
+        # top rectangle
+        self.top_rect = pygame.Rect(pos,(width,height))
+        self.top_color = '#475F77'
+
+        # bottom rectangle
+        self.bottom_rect = pygame.Rect(pos,(width,height))
+        self.bottom_color = '#eceff1'
+        #text
+        self.text_surf = font.render(text,True,'#FFFFFF')
+        self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
+
+    def draw(self):
+        # elevation logic
+        self.top_rect.y = self.original_y_pos - self.dynamic_elevation
+        self.text_rect.center = self.top_rect.center
+
+        self.bottom_rect.midtop = self.top_rect.midtop
+        self.bottom_rect.height = self.top_rect.height + self.dynamic_elevation
+
+        pygame.draw.rect(screen,self.bottom_color, self.bottom_rect,border_radius = 60)
+        pygame.draw.rect(screen,self.top_color, self.top_rect,border_radius = 60)
+        screen.blit(self.text_surf, self.text_rect)
+        self.is_clicked()
+
+    def is_clicked(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.top_rect.collidepoint(mouse_pos):
+            self.top_color = '#b5bfc8'
+            if pygame.mouse.get_pressed()[0]:
+                self.dynamic_elevation = 0
+                self.pressed = True
+                return True
+            else:
+                self.dynamic_elevation = self.elevation
+                if self.pressed == True:
+                    self.pressed = False
+                return True
+
+        else:
+            self.dynamic_elevation = self.elevation
+            self.top_color = '#475F77'
+
+
+
+
 
 
 # Constants for the button dimensions
-BUTTON_WIDTH = 280
+BUTTON_WIDTH = 420
 BUTTON_HEIGHT = 60
 
 
-
-class CircleButton:
-    def __init__(self, x, y, radius, color, text, text_color, font_size):
-        self.x = x
-        self.y = y
-        self.radius = radius
-        self.color = color
-        self.text = text
-        self.text_color = text_color
-        self.font = pygame.font.Font(None, font_size)
-
-
-    def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
-        text_surface = self.font.render(self.text, True, self.text_color)
-        text_rect = text_surface.get_rect(center=(self.x, self.y))
-        screen.blit(text_surface, text_rect)
-
-    def is_clicked(self, pos):
-        distance = math.sqrt((self.x - pos[0]) ** 2 + (self.y - pos[1]) ** 2)
-        return distance <= self.radius
 
 # Create the Pygame window
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # pygame.display.set_caption("Circle Button Example")
 
-# Create the button
-#
-# button1 = CircleButton(
-#     x=SCREEN_WIDTH // 2,
-#     y=(SCREEN_HEIGHT - SCREEN_HEIGHT//2)+110,
-#     radius=BUTTON_RADIUS,
-#     color=BLACK,
-#     text="Level-2",
-#     text_color=WHITE,
-#     font_size=30
-# )
-#
-# button2 = CircleButton(
-#     x=SCREEN_WIDTH // 2,
-#     y=SCREEN_HEIGHT // 2,
-#     radius=BUTTON_RADIUS,
-#     color=BLACK,
-#     text="Level-1",
-#     text_color=WHITE,
-#     font_size=35
-# )
-#
-#
-#
-# button3 = CircleButton(
-#     x=SCREEN_WIDTH // 2,
-#     y=(SCREEN_HEIGHT - SCREEN_HEIGHT//2)+220,
-#     radius=BUTTON_RADIUS,
-#     color=BLACK,
-#     text="Exit",
-#     text_color=WHITE,
-#     font_size=30
-# )
-
 
 # Create the buttons
-button2 = RectButton(
-    x=SCREEN_WIDTH // 2 - BUTTON_WIDTH // 2,
-    y=SCREEN_HEIGHT // 2 - BUTTON_HEIGHT // 2,
+button2 = Button(
     width=BUTTON_WIDTH,
     height=BUTTON_HEIGHT,
-    color=BLACK,
-    text="Random Letter Mode",
-    text_color=WHITE,
-    font_size=35
+    pos= (250,250),
+    elevation= 5,
+    # color=BLACK,
+    text="Random Letter",
+
 )
 
-button1 = RectButton(
-    x=SCREEN_WIDTH // 2 - BUTTON_WIDTH // 2,
-    y=(SCREEN_HEIGHT - SCREEN_HEIGHT//2)+80,
+button1 = Button(
     width=BUTTON_WIDTH,
     height=BUTTON_HEIGHT,
-    color=BLACK,
+    pos= (250,350),
+    elevation= 6,
     text="Word Mode",
-    text_color=WHITE,
-    font_size=30
 )
 
-button3 = RectButton(
-    x=SCREEN_WIDTH // 2 - BUTTON_WIDTH // 2,
-    y=(SCREEN_HEIGHT - SCREEN_HEIGHT//2)+130+BUTTON_HEIGHT,
+
+button3 = Button(
     width=BUTTON_WIDTH,
     height=BUTTON_HEIGHT,
-    color=BLACK,
+    pos= (250,450),
+    elevation= 5,
     text="Exit",
-    text_color=WHITE,
-    font_size=30
 )
 
 
 # Image imports
 BG = pygame.image.load("p4.jpg")
-L2 = pygame.image.load("p2.jpg")
+L2 = pygame.image.load("p6.png")
 target = pygame.image.load("shot.png")
 logo = pygame.image.load("p5.png")
 #shotty = pygame.image.load("Shotgun.png")
@@ -155,9 +133,6 @@ pygame.display.set_icon(icon)
 clock = pygame.time.Clock()
 
 
-# Text font
-font = pygame.font.Font("freesansbold.ttf", 50)
-fontScore = pygame.font.Font("freesansbold.ttf", 35)
 
 # Target coordinates, these two values should change when the new word appears
 textX = 170
@@ -234,7 +209,7 @@ scoreboard = "Words typed: " + str(score)
 
 def printer(x, y):
     """ Presents the text onto the screen."""
-    show = font.render(currentWord, True, YELLOW)
+    show = font.render(currentWord, True, WHITE)
     screen.blit(show, (x, y))
 
 
@@ -246,22 +221,11 @@ def updatescore(scoreboard):
 
 def intro():
     """ Lays out everything for the starting screen"""
-    #show1 = font.render((" PROTOTYPE"), True, TITLE )  # pygame surface string
 
+    button1.draw()
+    button2.draw()
+    button3.draw()
 
-
-    #screen.blit(show1, (70, 100))
-   # screen.blit(show2, (70, 130))
-    #screen.blit(show3, (70, 160))
-
-
-    # button1.draw(screen)
-    # button2.draw(screen)
-    # button3.draw(screen)
-
-    button1.draw(screen)
-    button2.draw(screen)
-    button3.draw(screen)
 
 
 def randomString():
@@ -277,7 +241,7 @@ def randomCoordinates():
     return textX, textY
 
 
-def correctLetter():
+def correctLetter(song):
     """Eliminates the first letter of the word when the user is correct"""
     global textX
     global lengthTracker
@@ -287,6 +251,10 @@ def correctLetter():
     temp = ""  # stores the joined string
     currentWord = temp.join(indexedWord)
     lengthTracker += 1  # used to keep track of which letter the user is on
+    pygame.mixer.init()
+    background_music_file = os.path.join("Music", song)
+    pygame.mixer.music.load(background_music_file)
+    pygame.mixer.music.play(-1)
 
 
 def wrongLetter():
@@ -314,21 +282,48 @@ while tracker:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             # Check if the left mouse button was clicked
             mouse_pos = pygame.mouse.get_pos()
-            if button1.is_clicked(mouse_pos):
-                print("1")
-                starttrack += 1
-                correctLetter()
 
-
-            if button2.is_clicked(mouse_pos):
-                print("2")
-                #starttrack += 1
-                level_1.level_1()
-
-
-            if button3.is_clicked(mouse_pos):
+            if button3.is_clicked():
                 print("3")
                 tracker = False
+                
+            if button1.is_clicked():
+                print("1")
+                starttrack += 1
+                correctLetter("Song_2.mp3")
+                
+
+
+            # if button2.is_clicked():
+            #    print("2")
+            #    # starttrack += 1
+            #    level_1.level_1("lv1.csv", "Song_1.mp3")
+            #    level_1.level_1("lv2.csv", "Song_2.mp3")
+            #    level_1.level_1("lv3.csv", "Song_3.mp3")
+            #    level_1.level_1("lv4.csv", "Song_4.mp3")
+            #    level_1.level_1("lv5.csv", "Song_5.mp3")
+
+            if button2.is_clicked():
+                print("2")
+                # starttrack += 1
+                tscore = 0
+                rscore = level_1.level_1("lv1.csv", "Song_1.mp3", tscore)
+                tscore = rscore + tscore
+                if rscore >= 0:
+                    rscore = level_1.level_1("lv2.csv", "Song_2.mp3", tscore)
+                    tscore = rscore + tscore
+                if rscore >= 0:
+                    rscore = level_1.level_1("lv3.csv", "Song_3.mp3", tscore)
+                    tscore = rscore + tscore
+                if rscore >= 0:
+                    rscore = level_1.level_1("lv4.csv", "Song_4.mp3", tscore)
+                    tscore = rscore + tscore
+                if rscore >= 0:
+                    rscore = level_1.level_1("lv5.csv", "Song_5.mp3", tscore)
+                tracker = False
+
+
+
 
         # This is tracking if a key is pressed
         if event.type == pygame.KEYDOWN:
@@ -565,22 +560,14 @@ while tracker:
     if starttrack != 0:
         # this spawns shotgun and a new target
         screen.blit(target, (textX - 10, textY - 100))
-        #screen.blit(shotty, (250, 350))
-    clock.tick(60)  # this is to control the length of the bullet muzzle flash
+
+
+    clock.tick(60)
     pygame.display.update()
 
 
 
 # Things to do in future possibly:
-# word changes with cool sound effect, like a bullet firing
-# word moves around screen
-# randomly generates a word with a generator instead of a predisposed list
+# Two member can type at a same time.
 # add a starting menu with advanced options
 # calculate words per minute
-# Speed Letter Recognition game mode
-# paragraph calculator that calculates words per minute
-
-
-
-
-
